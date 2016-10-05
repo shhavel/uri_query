@@ -4,6 +4,8 @@ URI encode nested GET parameters and array values.
 
 Prepares URI query parameters to be used in `URI.encode_query/1` or `HTTPoison.get/3`
 
+https://hexdocs.pm/uri_query/0.1.0/UriQuery.html
+
 ## Installation
 
 The package can be installed as:

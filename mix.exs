@@ -7,14 +7,16 @@ defmodule UriQuery.Mixfile do
      elixir: "~> 1.3",
      build_embedded: Mix.env == :prod,
      start_permanent: Mix.env == :prod,
-     deps: deps()]
+     deps: deps(),
+     description: description(),
+     package: package()]
   end
 
   # Configuration for the OTP application
   #
   # Type "mix help compile.app" for more information
   def application do
-    [applications: [:logger]]
+    [applications: []]
   end
 
   # Dependencies can be Hex packages:
@@ -27,6 +29,19 @@ defmodule UriQuery.Mixfile do
   #
   # Type "mix help deps" for more examples and options
   defp deps do
-    []
+    [{:ex_doc, ">= 0.0.0", only: :dev}]
+  end
+
+  defp description do
+    """
+    URI encode nested GET parameters and array values in Elixir.
+    """
+  end
+
+  defp package do
+    [maintainers: ["Oleksandr Avoyants"],
+     licenses: ["Apache 2.0"],
+     links: %{"GitHub" => "https://github.com/shhavel/uri_query"},
+     files: ~w(mix.exs README.md lib)]
   end
 end
