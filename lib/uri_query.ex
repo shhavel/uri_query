@@ -24,25 +24,38 @@ defmodule UriQuery do
   [{"user[email]", "test@example.com"}, {"user[name]", "John Doe"}]
 
   """
+
+  @noKVListError "parameter for params/1 must be a list of key-value pairs"
+
   def params(enumerable) do
-    enumerable
-    |> Enum.reduce([], fn(pair, acc) -> push_kv_pair("", pair, false, acc) end)
-    |> Enum.reverse
+    if(is_enumerable(enumerable)) do
+      enumerable
+      |> Enum.reduce([], fn(pair, acc) -> accumulate_kv_pair("", pair, false, acc) end)
+      |> Enum.reverse  
+    else
+      raise ArgumentError, @noKVListError
+    end
+  end 
+
+  defp is_enumerable(value) do
+    is_list(value) or is_map(value)
   end
 
-  defp push_kv_pair(_, {key, _}, _, _) when is_list(key) do
-    raise ArgumentError, "params/1 keys cannot be lists, got: #{inspect key}"
+  defp accumulate_kv_pair(_, {key, _}, _, _) when is_list(key), do: raise ArgumentError, "params/1 keys cannot be lists, got: #{inspect key}"
+  defp accumulate_kv_pair(prefix, {key, values}, false, acc) when is_list(values) or is_map(values) do
+    Enum.reduce(values, acc, fn (value, acc) -> accumulate_kv_pair(prefix, {key, value}, true, acc) end)
   end
-  defp push_kv_pair(prefix, {key, values}, _, acc) when is_list(values) or is_map(values) do
-    Enum.reduce(values, acc, fn (value, acc) -> push_kv_pair(prefix, {key, value}, true, acc) end)
+  defp accumulate_kv_pair(prefix, {key, {nested_key, value}}, _, acc) do
+    key
+    |> build_key(prefix)
+    |> accumulate_kv_pair({build_nested_key(nested_key), value}, false, acc)
   end
-  defp push_kv_pair(prefix, {key, {nested_key, value}}, _, acc) do
-    push_kv_pair(prefix <> Kernel.to_string(key), {"[" <> Kernel.to_string(nested_key) <> "]", value}, false, acc)
-  end
-  defp push_kv_pair(prefix, {key, value}, true, acc) do
-    [{prefix <> Kernel.to_string(key) <> "[]", Kernel.to_string(value)} | acc]
-  end
-  defp push_kv_pair(prefix, {key, value}, _, acc) do
-    [{prefix <> Kernel.to_string(key), Kernel.to_string(value)} | acc]
-  end
+  defp accumulate_kv_pair(prefix, {key, value}, true, acc) , do: [{build_key(key, prefix, "[]"), to_string(value)} | acc]
+  defp accumulate_kv_pair(prefix, {key, value}, false, acc), do: [{build_key(key, prefix), to_string(value)} | acc]
+  defp accumulate_kv_pair(_, pair, _, _), do: raise ArgumentError, @noKVListError
+  
+  defp build_key(key, prefix)        , do: build_key(key, prefix, "")
+  defp build_key(key, prefix, suffix), do: prefix <> to_string(key) <> suffix
+
+  defp build_nested_key(nested_key), do: "[#{to_string(nested_key)}]"
 end

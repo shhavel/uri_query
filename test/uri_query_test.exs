@@ -2,6 +2,18 @@ defmodule UriQueryTest do
   use ExUnit.Case
   doctest UriQuery
 
+  test "no list" do
+    assert_raise ArgumentError, "parameter for params/1 must be a list of key-value pairs", fn ->
+      UriQuery.params("foo")
+    end
+  end
+
+  test "no key-value pair" do
+    assert_raise ArgumentError, "parameter for params/1 must be a list of key-value pairs", fn ->
+      UriQuery.params([:foo, :bar])
+    end
+  end
+
   test "list cannot be used as a key" do
     assert_raise ArgumentError, "params/1 keys cannot be lists, got: 'foo'", fn ->
       UriQuery.params([{'foo', "bar"}])
@@ -30,6 +42,10 @@ defmodule UriQueryTest do
 
   test "deep nested tupple" do
     assert UriQuery.params(foo: {:bar, {:baz, :quux}}) == [{"foo[bar][baz]", "quux"}]
+  end
+
+  test "simple map" do
+    assert UriQuery.params(%{foo: "bar"}) == [{"foo", "bar"}]
   end
 
   test "complex cases" do
