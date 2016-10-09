@@ -25,6 +25,10 @@ defmodule UriEncodeQueryTest do
     assert UriQuery.params(foo: {:bar, {:baz, :quux}}) |> URI.encode_query == "foo%5Bbar%5D%5Bbaz%5D=quux"
   end
 
+  test "simple map" do
+    assert UriQuery.params(%{foo: "bar"}) |> URI.encode_query == "foo=bar"
+  end
+
   test "complex cases" do
     assert UriQuery.params([{:foo, [{:bar, ["baz", "quux"]}, {:quux, :corge}]}, {:grault, :garply}]) |> URI.encode_query == "foo%5Bbar%5D%5B%5D=baz&foo%5Bbar%5D%5B%5D=quux&foo%5Bquux%5D=corge&grault=garply"
     assert UriQuery.params([{:foo, {:bar, ["baz", "qux"]}}]) |> URI.encode_query == "foo%5Bbar%5D%5B%5D=baz&foo%5Bbar%5D%5B%5D=qux"
