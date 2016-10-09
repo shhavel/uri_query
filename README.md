@@ -1,10 +1,10 @@
-# UriQuery
+# UriQuery [![Build Status](https://travis-ci.org/shhavel/uri_query.svg?branch=master)](https://travis-ci.org/shhavel/uri_query)
 
 URI encode nested GET parameters and array values.
 
 Prepares URI query parameters to be used in `URI.encode_query/1` or `HTTPoison.get/3`
 
-https://hexdocs.pm/uri_query/0.1.0/UriQuery.html
+https://hexdocs.pm/uri_query/0.1.1/UriQuery.html
 
 ## Installation
 
@@ -14,7 +14,7 @@ The package can be installed as:
 
     ```elixir
     def deps do
-      [{:uri_query, "~> 0.1.0"}]
+      [{:uri_query, "~> 0.1.1"}]
     end
     ```
 
@@ -37,7 +37,7 @@ iex> UriQuery.params(foo: ["bar", "quux"]) |> URI.encode_query
 iex> HTTPoison.get("http://example.com", [], params: UriQuery.params(foo: ["bar", "quux"]))
 ```
 
-WIth nested structures (maps or keyword lists)
+With nested structures (maps or keyword lists)
 
 ```elixir
 iex> UriQuery.params(%{user: %{name: "Dougal McGuire", email: "test@example.com"}}) |> URI.encode_query
@@ -46,4 +46,11 @@ iex> UriQuery.params(%{user: %{name: "Dougal McGuire", email: "test@example.com"
 iex> params = %{user: %{name: "Dougal McGuire", email: "test@example.com"}} |> UriQuery.params
 [{"user[email]", "test@example.com"}, {"user[name]", "Dougal McGuire"}]
 iex> HTTPoison.get("http://example.com", [], params: params)
+```
+
+NOTE: Empty lists are ignored
+
+```elixir
+iex> UriQuery.params(foo: []) |> URI.encode_query
+""
 ```

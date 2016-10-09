@@ -58,4 +58,10 @@ defmodule UriQueryTest do
     assert UriQuery.params(%{user: %{name: "Dougal McGuire", meta: %{foo: "bar", baz: "qux"}}}) == [{"user[meta][baz]", "qux"}, {"user[meta][foo]", "bar"}, {"user[name]", "Dougal McGuire"}]
     assert UriQuery.params(%{user: %{name: "Dougal McGuire", meta: %{test: "Example", data: ["foo", "bar"]}}}) == [{"user[meta][data][]", "foo"}, {"user[meta][data][]", "bar"}, {"user[meta][test]", "Example"}, {"user[name]", "Dougal McGuire"}]
   end
+
+  test "ignores empty list" do
+    assert UriQuery.params(foo: []) == []
+    assert UriQuery.params(foo: [], bar: "quux") == [{"bar", "quux"}]
+    assert UriQuery.params(foo: [], bar: ["quux", []]) == [{"bar[]", "quux"}]
+  end
 end

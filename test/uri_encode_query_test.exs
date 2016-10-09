@@ -39,6 +39,12 @@ defmodule UriEncodeQueryTest do
     assert UriQuery.params(%{user: %{name: "Dougal McGuire", meta: %{foo: "bar", baz: "qux"}}}) |> URI.encode_query == "user%5Bmeta%5D%5Bbaz%5D=qux&user%5Bmeta%5D%5Bfoo%5D=bar&user%5Bname%5D=Dougal+McGuire"
     assert UriQuery.params(%{user: %{name: "Dougal McGuire", meta: %{test: "Example", data: ["foo", "bar"]}}}) |> URI.encode_query == "user%5Bmeta%5D%5Bdata%5D%5B%5D=foo&user%5Bmeta%5D%5Bdata%5D%5B%5D=bar&user%5Bmeta%5D%5Btest%5D=Example&user%5Bname%5D=Dougal+McGuire"
   end
+
+  test "ignores empty list" do
+    assert UriQuery.params(foo: []) |> URI.encode_query == ""
+    assert UriQuery.params(foo: [], bar: "quux") |> URI.encode_query == "bar=quux"
+    assert UriQuery.params(foo: [], bar: ["quux", []]) |> URI.encode_query == "bar%5B%5D=quux"
+  end
 end
 
 
