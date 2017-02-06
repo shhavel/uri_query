@@ -37,8 +37,14 @@ defmodule UriQuery do
   defp accumulate_kv_pair(_, {key, _}, _, _) when is_list(key) do
     raise ArgumentError, "params/1 keys cannot be lists, got: #{inspect key}"
   end
-  defp accumulate_kv_pair(prefix, {key, values}, _, acc) when is_list(values) or is_map(values) do
+  defp accumulate_kv_pair(prefix, {key, values}, _, acc) when is_map(values) do
     Enum.reduce(values, acc, fn (value, acc) -> accumulate_kv_pair(prefix, {key, value}, true, acc) end)
+  end
+  defp accumulate_kv_pair(prefix, {key, values}, _, acc) when is_list(values) do
+    values
+    |> Enum.with_index
+    |> Enum.map(fn {value, index} -> {index, value} end)
+    |> Enum.reduce(acc, fn (value, acc) -> accumulate_kv_pair(prefix, {key, value}, true, acc) end)
   end
   defp accumulate_kv_pair(prefix, {key, {nested_key, value}}, _, acc) do
     build_key(prefix, key)
