@@ -17,7 +17,7 @@ defmodule UriQuery do
 
   iex> query = %{foo: ["bar", "baz"]}
   iex> UriQuery.params(query)
-  [{"foo[]", "bar"}, {"foo[]", "baz"}]
+  [{"foo[0]", "bar"}, {"foo[1]", "baz"}]
 
   iex> query = %{"user" => %{"name" => "John Doe", "email" => "test@example.com"}}
   iex> UriQuery.params(query)
@@ -41,9 +41,16 @@ defmodule UriQuery do
     Enum.reduce(values, acc, fn (value, acc) -> accumulate_kv_pair(prefix, {key, value}, true, acc) end)
   end
   defp accumulate_kv_pair(prefix, {key, values}, _, acc) when is_list(values) do
-    values
-    |> Enum.with_index
-    |> Enum.map(fn {value, index} -> {index, value} end)
+    tuples =
+      if Keyword.keyword?(values) do
+        values
+      else
+        values
+        |> Enum.with_index
+        |> Enum.map(fn {value, index} -> {index, value} end)
+      end
+
+    tuples
     |> Enum.reduce(acc, fn (value, acc) -> accumulate_kv_pair(prefix, {key, value}, true, acc) end)
   end
   defp accumulate_kv_pair(prefix, {key, {nested_key, value}}, _, acc) do
