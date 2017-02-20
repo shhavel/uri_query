@@ -19,6 +19,10 @@ defmodule UriQuery do
   iex> UriQuery.params(query)
   [{"foo[0]", "bar"}, {"foo[1]", "baz"}]
 
+  iex> query = %{foo: ["bar", "baz"]}
+  iex> UriQuery.params(query, add_indices_to_lists: false)
+  [{"foo[]", "bar"}, {"foo[]", "baz"}]
+
   iex> query = %{"user" => %{"name" => "John Doe", "email" => "test@example.com"}}
   iex> UriQuery.params(query)
   [{"user[email]", "test@example.com"}, {"user[name]", "John Doe"}]
@@ -27,20 +31,24 @@ defmodule UriQuery do
 
   @noKVListError "parameter for params/1 must be a list of key-value pairs"
 
-  def params(enumerable) when is_list(enumerable) or is_map(enumerable) do
+  def params(enumerable, opts \\ [])
+  def params(enumerable, opts) when is_list(enumerable) or is_map(enumerable) do
     enumerable
-    |> Enum.reduce([], fn(pair, acc) -> accumulate_kv_pair("", pair, false, acc) end)
+    |> Enum.reduce([], fn(pair, acc) -> accumulate_kv_pair("", pair, false, acc, opts) end)
     |> Enum.reverse
   end
-  def params(_), do: raise ArgumentError, @noKVListError
+  def params(_, _), do: raise ArgumentError, @noKVListError
 
-  defp accumulate_kv_pair(_, {key, _}, _, _) when is_list(key) do
+  defp accumulate_kv_pair(_, {key, _}, _, _, _) when is_list(key) do
     raise ArgumentError, "params/1 keys cannot be lists, got: #{inspect key}"
   end
-  defp accumulate_kv_pair(prefix, {key, values}, _, acc) when is_map(values) do
-    Enum.reduce(values, acc, fn (value, acc) -> accumulate_kv_pair(prefix, {key, value}, true, acc) end)
+  defp accumulate_kv_pair(prefix, {key, values}, _, acc, opts) when is_map(values) do
+    Enum.reduce(values, acc, fn (value, acc) -> accumulate_kv_pair(prefix, {key, value}, true, acc, opts) end)
   end
-  defp accumulate_kv_pair(prefix, {key, values}, _, acc) when is_list(values) do
+  defp accumulate_kv_pair(prefix, {key, values}, _, acc, [add_indices_to_lists: false] = opts) when is_list(values) do
+    Enum.reduce(values, acc, fn (value, acc) -> accumulate_kv_pair(prefix, {key, value}, true, acc, opts) end)
+  end
+  defp accumulate_kv_pair(prefix, {key, values}, _, acc, opts) when is_list(values) do
     tuples =
       if Keyword.keyword?(values) do
         values
@@ -51,19 +59,19 @@ defmodule UriQuery do
       end
 
     tuples
-    |> Enum.reduce(acc, fn (value, acc) -> accumulate_kv_pair(prefix, {key, value}, true, acc) end)
+    |> Enum.reduce(acc, fn (value, acc) -> accumulate_kv_pair(prefix, {key, value}, true, acc, opts) end)
   end
-  defp accumulate_kv_pair(prefix, {key, {nested_key, value}}, _, acc) do
+  defp accumulate_kv_pair(prefix, {key, {nested_key, value}}, _, acc, opts) do
     build_key(prefix, key)
-    |> accumulate_kv_pair({build_nested_key(nested_key), value}, false, acc)
+    |> accumulate_kv_pair({build_nested_key(nested_key), value}, false, acc, opts)
   end
-  defp accumulate_kv_pair(prefix, {key, value}, true, acc) do
+  defp accumulate_kv_pair(prefix, {key, value}, true, acc, _opts) do
     [{build_key(prefix, key, "[]"), to_string(value)} | acc]
   end
-  defp accumulate_kv_pair(prefix, {key, value}, _false, acc) do
+  defp accumulate_kv_pair(prefix, {key, value}, _false, acc, _opts) do
     [{build_key(prefix, key), to_string(value)} | acc]
   end
-  defp accumulate_kv_pair(_, _, _, _), do: raise ArgumentError, @noKVListError
+  defp accumulate_kv_pair(_, _, _, _, _), do: raise ArgumentError, @noKVListError
 
   defp build_key(prefix, key)        , do: prefix <> to_string(key)
   defp build_key(prefix, key, suffix), do: prefix <> to_string(key) <> suffix

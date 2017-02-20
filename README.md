@@ -32,6 +32,9 @@ With list values
 
 ```elixir
 iex> UriQuery.params(foo: ["bar", "quux"]) |> URI.encode_query
+"foo%5B0%5D=bar&foo%5B1%5D=quux"
+
+iex> UriQuery.params([foo: ["bar", "quux"]], add_indices_to_lists: false) |> URI.encode_query
 "foo%5B%5D=bar&foo%5B%5D=quux"
 
 iex> HTTPoison.get("http://example.com", [], params: UriQuery.params(foo: ["bar", "quux"]))
