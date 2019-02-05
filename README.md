@@ -10,21 +10,21 @@ https://hexdocs.pm/uri_query/0.1.1/UriQuery.html
 
 The package can be installed as:
 
-  1. Add `uri_query` to your list of dependencies in `mix.exs`:
+1. Add `uri_query` to your list of dependencies in `mix.exs`:
 
-    ```elixir
-    def deps do
-      [{:uri_query, "~> 0.1.1"}]
-    end
-    ```
+```elixir
+def deps do
+  [{:uri_query, "~> 0.1.1"}]
+end
+```
 
-  2. Ensure `uri_query` is started before your application:
+2. Ensure `uri_query` is started before your application:
 
-    ```elixir
-    def application do
-      [applications: [:uri_query]]
-    end
-    ```
+```elixir
+def application do
+  [applications: [:uri_query]]
+end
+```
 
 ## Usage
 
