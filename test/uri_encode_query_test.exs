@@ -14,15 +14,15 @@ defmodule UriEncodeQueryTest do
     assert UriQuery.params([foo: ["bar", "quux"]], add_indices_to_lists: false) |> URI.encode_query == "foo%5B%5D=bar&foo%5B%5D=quux"
   end
 
-  test "nested tupple" do
+  test "nested tuple" do
     assert UriQuery.params(foo: {:bar, :baz}) |> URI.encode_query == "foo%5Bbar%5D=baz"
   end
 
-  test "nested tupple list" do
+  test "nested tuple list" do
     assert UriQuery.params(foo: [{:bar, :baz}, {:qux, :quux}]) |> URI.encode_query == "foo%5Bbar%5D=baz&foo%5Bqux%5D=quux"
   end
 
-  test "deep nested tupple" do
+  test "deep nested tuple" do
     assert UriQuery.params(foo: {:bar, {:baz, :quux}}) |> URI.encode_query == "foo%5Bbar%5D%5Bbaz%5D=quux"
   end
 

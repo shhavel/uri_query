@@ -33,15 +33,15 @@ defmodule UriQueryTest do
     assert UriQuery.params([foo: ["bar", "quux"]], add_indices_to_lists: false) == [{"foo[]", "bar"}, {"foo[]", "quux"}]
   end
 
-  test "nested tupple" do
+  test "nested tuple" do
     assert UriQuery.params(foo: {:bar, :baz}) == [{"foo[bar]", "baz"}]
   end
 
-  test "nested tupple list" do
+  test "nested tuple list" do
     assert UriQuery.params(foo: [{:bar, :baz}, {:qux, :quux}]) == [{"foo[bar]", "baz"}, {"foo[qux]", "quux"}]
   end
 
-  test "deep nested tupple" do
+  test "deep nested tuple" do
     assert UriQuery.params(foo: {:bar, {:baz, :quux}}) == [{"foo[bar][baz]", "quux"}]
   end
 
