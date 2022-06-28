@@ -6,7 +6,7 @@ defmodule UriQuery do
   that is safe to be encoded into a query string.
 
   Keys and Values can be any term that implements the `String.Chars`
-  protocol. Lists connot be used as keys.
+  protocol. Lists cannot be used as keys.
   Values can be lists or maps including nested maps.
 
   ## Examples
