@@ -37,11 +37,34 @@ defmodule UriEncodeQueryTest do
     assert UriQuery.params([{:foo, {:bar, ["baz", "qux"]}}], add_indices_to_lists: false) |> URI.encode_query == "foo%5Bbar%5D%5B%5D=baz&foo%5Bbar%5D%5B%5D=qux"
   end
 
+  def query_contains_all?(actual, expected) do
+    actual_parts = String.split(actual, "&")
+    expected_parts = String.split(expected, "&")
+    Enum.all?(actual_parts, fn part ->
+      Enum.member?(expected_parts, part)
+    end)
+  end
+
   test "with map" do
-    assert UriQuery.params(%{user: %{name: "Dougal McGuire", email: "test@example.com"}}) |> URI.encode_query == "user%5Bemail%5D=test%40example.com&user%5Bname%5D=Dougal+McGuire"
-    assert UriQuery.params(%{user: %{name: "Dougal McGuire", meta: %{foo: "bar", baz: "qux"}}}) |> URI.encode_query == "user%5Bmeta%5D%5Bbaz%5D=qux&user%5Bmeta%5D%5Bfoo%5D=bar&user%5Bname%5D=Dougal+McGuire"
-    assert UriQuery.params(%{user: %{name: "Dougal McGuire", meta: %{test: "Example", data: ["foo", "bar"]}}}) |> URI.encode_query == "user%5Bmeta%5D%5Bdata%5D%5B0%5D=foo&user%5Bmeta%5D%5Bdata%5D%5B1%5D=bar&user%5Bmeta%5D%5Btest%5D=Example&user%5Bname%5D=Dougal+McGuire"
-    assert UriQuery.params(%{user: %{name: "Dougal McGuire", meta: %{test: "Example", data: ["foo", "bar"]}}}, add_indices_to_lists: false) |> URI.encode_query == "user%5Bmeta%5D%5Bdata%5D%5B%5D=foo&user%5Bmeta%5D%5Bdata%5D%5B%5D=bar&user%5Bmeta%5D%5Btest%5D=Example&user%5Bname%5D=Dougal+McGuire"
+    # OTP 26 has changed the order of which maps are iterated, causing order to change
+    # when map:to_list/1 is called during Enum.reduce in UriQuery.params/2.
+    # So now a order-agnostic test function is used.
+    assert query_contains_all?(
+      UriQuery.params(%{user: %{name: "Dougal McGuire", email: "test@example.com"}}) |> URI.encode_query,
+      "user%5Bemail%5D=test%40example.com&user%5Bname%5D=Dougal+McGuire"
+    )
+    assert query_contains_all?(
+      UriQuery.params(%{user: %{name: "Dougal McGuire", meta: %{foo: "bar", baz: "qux"}}}) |> URI.encode_query,
+      "user%5Bmeta%5D%5Bbaz%5D=qux&user%5Bmeta%5D%5Bfoo%5D=bar&user%5Bname%5D=Dougal+McGuire"
+    )
+    assert query_contains_all?(
+      UriQuery.params(%{user: %{name: "Dougal McGuire", meta: %{test: "Example", data: ["foo", "bar"]}}}) |> URI.encode_query,
+      "user%5Bmeta%5D%5Bdata%5D%5B0%5D=foo&user%5Bmeta%5D%5Bdata%5D%5B1%5D=bar&user%5Bmeta%5D%5Btest%5D=Example&user%5Bname%5D=Dougal+McGuire"
+    )
+    assert query_contains_all?(
+      UriQuery.params(%{user: %{name: "Dougal McGuire", meta: %{test: "Example", data: ["foo", "bar"]}}}, add_indices_to_lists: false) |> URI.encode_query,
+      "user%5Bmeta%5D%5Bdata%5D%5B%5D=foo&user%5Bmeta%5D%5Bdata%5D%5B%5D=bar&user%5Bmeta%5D%5Btest%5D=Example&user%5Bname%5D=Dougal+McGuire"
+    )
   end
 
   test "ignores empty list" do
