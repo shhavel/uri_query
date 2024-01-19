@@ -14,7 +14,7 @@ The package can be installed as:
 
 ```elixir
 def deps do
-  [{:uri_query, "~> 0.1.1"}]
+  [{:uri_query, "~> 0.2.0"}]
 end
 ```
 
