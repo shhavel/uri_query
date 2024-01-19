@@ -3,7 +3,7 @@ defmodule UriQuery.Mixfile do
 
   def project do
     [app: :uri_query,
-     version: "0.1.2",
+     version: "0.2.0",
      elixir: "~> 1.9",
      build_embedded: Mix.env == :prod,
      start_permanent: Mix.env == :prod,
@@ -39,7 +39,7 @@ defmodule UriQuery.Mixfile do
   end
 
   defp package do
-    [maintainers: ["Oleksandr Avoyants"],
+    [maintainers: ["Oleksandr Avoiants"],
      licenses: ["Apache 2.0"],
      links: %{"GitHub" => "https://github.com/shhavel/uri_query"},
      files: ~w(mix.exs README.md lib)]
