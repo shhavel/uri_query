@@ -15,8 +15,10 @@ defmodule UriQueryTest do
   end
 
   test "list cannot be used as a key" do
-    assert_raise ArgumentError, "params/1 keys cannot be lists, got: 'foo'", fn ->
-      UriQuery.params([{'foo', "bar"}])
+    # n.b., a test for charlist has been replaced with a simple integer list as
+    #       charlists print differently in recent Elixir versions
+    assert_raise ArgumentError, "params/1 keys cannot be lists, got: [0, 1]", fn ->
+      UriQuery.params([{[0,1], "bar"}])
     end
   end
 
@@ -56,11 +58,30 @@ defmodule UriQueryTest do
     assert UriQuery.params([{:foo, {:bar, ["baz", "qux"]}}], add_indices_to_lists: false) == [{"foo[bar][]", "baz"}, {"foo[bar][]", "qux"}]
   end
 
+  def list_contains_all?(list, elements) do
+    Enum.all?(elements, fn element -> Enum.member?(list, element) end)
+  end
+
   test "with map" do
-    assert UriQuery.params(%{user: %{name: "Dougal McGuire", email: "test@example.com"}}) == [{"user[email]", "test@example.com"}, {"user[name]", "Dougal McGuire"}]
-    assert UriQuery.params(%{user: %{name: "Dougal McGuire", meta: %{foo: "bar", baz: "qux"}}}) == [{"user[meta][baz]", "qux"}, {"user[meta][foo]", "bar"}, {"user[name]", "Dougal McGuire"}]
-    assert UriQuery.params(%{user: %{name: "Dougal McGuire", meta: %{test: "Example", data: ["foo", "bar"]}}}) == [{"user[meta][data][0]", "foo"}, {"user[meta][data][1]", "bar"}, {"user[meta][test]", "Example"}, {"user[name]", "Dougal McGuire"}]
-    assert UriQuery.params(%{user: %{name: "Dougal McGuire", meta: %{test: "Example", data: ["foo", "bar"]}}}, add_indices_to_lists: false) == [{"user[meta][data][]", "foo"}, {"user[meta][data][]", "bar"}, {"user[meta][test]", "Example"}, {"user[name]", "Dougal McGuire"}]
+    # OTP 26 has changed the order of which maps are iterated, causing order to change
+    # when map:to_list/1 is called during Enum.reduce in UriQuery.params/2.
+    # So now a order-agnostic test function is used.
+    assert list_contains_all?(
+      UriQuery.params(%{user: %{name: "Dougal McGuire", email: "test@example.com"}}),
+      [{"user[email]", "test@example.com"}, {"user[name]", "Dougal McGuire"}]
+    )
+    assert list_contains_all?(
+      UriQuery.params(%{user: %{name: "Dougal McGuire", meta: %{foo: "bar", baz: "qux"}}}),
+      [{"user[meta][baz]", "qux"}, {"user[meta][foo]", "bar"}, {"user[name]", "Dougal McGuire"}]
+    )
+    assert list_contains_all?(
+      UriQuery.params(%{user: %{name: "Dougal McGuire", meta: %{test: "Example", data: ["foo", "bar"]}}}),
+      [{"user[meta][data][0]", "foo"}, {"user[meta][data][1]", "bar"}, {"user[meta][test]", "Example"}, {"user[name]", "Dougal McGuire"}]
+    )
+    assert list_contains_all?(
+      UriQuery.params(%{user: %{name: "Dougal McGuire", meta: %{test: "Example", data: ["foo", "bar"]}}}, add_indices_to_lists: false),
+      [{"user[meta][data][]", "foo"}, {"user[meta][data][]", "bar"}, {"user[meta][test]", "Example"}, {"user[name]", "Dougal McGuire"}]
+    )
   end
 
   test "ignores empty list" do

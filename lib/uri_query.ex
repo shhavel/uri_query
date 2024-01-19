@@ -37,7 +37,7 @@ defmodule UriQuery do
     |> Enum.reduce([], fn(pair, acc) -> accumulate_kv_pair("", pair, false, acc, opts) end)
     |> Enum.reverse
   end
-  def params(_, _), do: raise ArgumentError, @noKVListError
+  def params(_, _), do: raise(ArgumentError, @noKVListError)
 
   defp accumulate_kv_pair(_, {key, _}, _, _, _) when is_list(key) do
     raise ArgumentError, "params/1 keys cannot be lists, got: #{inspect key}"
@@ -71,7 +71,7 @@ defmodule UriQuery do
   defp accumulate_kv_pair(prefix, {key, value}, _false, acc, _opts) do
     [{build_key(prefix, key), to_string(value)} | acc]
   end
-  defp accumulate_kv_pair(_, _, _, _, _), do: raise ArgumentError, @noKVListError
+  defp accumulate_kv_pair(_, _, _, _, _), do: raise(ArgumentError, @noKVListError)
 
   defp build_key(prefix, key)        , do: prefix <> to_string(key)
   defp build_key(prefix, key, suffix), do: prefix <> to_string(key) <> suffix
